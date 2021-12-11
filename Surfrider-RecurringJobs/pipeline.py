@@ -48,7 +48,7 @@ with DAG(
         task_id="task5",
         postgres_conn_id="SurfRiderDb",
         sql="2_update_bi_temp_campaign.sql",
-    )    
+    )
 
     # Test that camp is inside country => DEPRECATED
     # test_campaign = PostgresOperator(
@@ -56,85 +56,94 @@ with DAG(
     #     postgres_conn_id="SurfRiderDb",
     #     sql="2_update_bi_temp_campaign.sql",
     #     # sql=GET_CAMPAIGN_ID_QUERY_PATH, "other params"),
-    # )    
+    # )   
 
     # Associate each trajectory_point to a river
     associate_trajectory_point = PostgresOperator(
         task_id="task7",
         postgres_conn_id="SurfRiderDb",
         sql="4_insert_bi_temp_trajectory_point_river.sql",
-    )    
+    )
 
     # Associate each campaign to a river
     associate_campaign = PostgresOperator(
         task_id="task8",
         postgres_conn_id="SurfRiderDb",
         sql="5_insert_bi_temp_campaign_river.sql",
-    )    
+    )
 
     # Compute trash indicators
     compute_trash = PostgresOperator(
         task_id="task9",
         postgres_conn_id="SurfRiderDb",
         sql="6_update_bi_temp_trash.sql",
-    )    
+    )
 
     # Insert trash indicators
     insert_trash = PostgresOperator(
         task_id="task10",
         postgres_conn_id="SurfRiderDb",
         sql="7_insert_bi_temp_trash_river.sql",
-    )    
+    )
 
     # Get old campaign id (to update with new data)
     get_old_campaign_ids = PostgresOperator(
         task_id="task11",
         postgres_conn_id="SurfRiderDb",
         sql="8_get_old_campaign_id.sql",
-    )    
+    )
 
     # Get old river id (to update with new data)
     get_old_river_ids = PostgresOperator(
         task_id="task12",
         postgres_conn_id="SurfRiderDb",
         sql="9_get_river_name.sql",
-    )    
+    )
 
     # Migrate data from bi to bi_temp (using ids gotten from tasks above)
     migrate_old_data_to_bi_temp = PostgresOperator(
         task_id="task13",
         postgres_conn_id="SurfRiderDb",
         sql="10_import_bi_table_to_bi_temp.sql",
-    )   
+    )
 
     # Compute updated indicators at river level (with old and new campaigns)
     compute_updated_river_indicators = PostgresOperator(
         task_id="task14",
         postgres_conn_id="SurfRiderDb",
         sql="11_update_bi_river.sql",
-    )    
+    )
 
     # Migrate data from bi_temp to bi (migrate updated data)
     migrate_new_data_to_bi = PostgresOperator(
         task_id="task15",
         postgres_conn_id="SurfRiderDb",
         sql="12_import_bi_temp_table_to_bi.sql",
-    )   
+    )
 
     # Delete data in bi_temp once completed
     delete_bi_temp_data = PostgresOperator(
         task_id="task16",
         postgres_conn_id="SurfRiderDb",
         sql="13_delete_from_bi_temp_table.sql",
-    )           
+    )
 
-    # WRITE LOGS once finished 
-    log_status_pipeline = PostgresOperator(
+    # Log pipeline once finished, if successful
+    log_pipeline_if_successful = PostgresOperator(
         task_id="task17",
         postgres_conn_id="SurfRiderDb",
-        sql="logs_status_pipeline.sql",
-        # Will be executed regardless of 
-        trigger_rule="all_done",
+        sql="logs_successful_pipeline.sql",
+        # Task will be executed if all of the upstream tasks were successful
+        trigger_rule="all_success",
+    )
+
+    # Log pipeline once finished, if failed
+    log_pipeline_if_failed = PostgresOperator(
+        task_id="task18",
+        postgres_conn_id="SurfRiderDb",
+        sql="logs_failed_pipeline.sql",
+        # Task will be executed if one of the upstream tasks has failed
+        trigger_rule="one_failed",
     )
 
 
