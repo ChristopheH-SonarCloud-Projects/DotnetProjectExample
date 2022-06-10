@@ -74,7 +74,31 @@ For trajectory-point table:
 
 - `speed` > computed as `distance/time_diff*3.6`
 
-- `latitude`,  `longitude`
+  
+  For trash table: 
+
+each trash is associated to its locality: `department`, `municipality`,  `state`,`country` 
+
+This step is managed by tasks `compute_metrics_bi_temp_trajectory_point`, `compute_metrics_bi_temp_trash`
+
+
+### Step4 - Compute campaign/trajectory point - river association
+
+Then, we associate each trajectory point of the `bi_temp` schema with a geom, to the `river`  referential.
+
+Using `ST_CLOSESTPOINT `function (postgis). 
+
+We have decided to not associate trajectory point to a river, if the distance to its closest point is over 500m.
+
+
+
+This step is managed by tasks : `compute_bi_temp_trajectory_point_river.sql`
+
+Then for each campaign, campaign geometry (`the_geom`) on referential river is computed and its distance.
+
+This step is managed by task :`compute_bi_temp_campaign_river.sql`  
+
+### Step5 - Compute campaign metrics
 
 For campaign table: 
 
@@ -86,41 +110,22 @@ For campaign table:
 
 - campaign `starting_point`and `ending_point` : point associated with `start_date`and `end_date`
 
-- distance between `starting_point` and `ending_point`
-
 - Total distance of the campaign: sum of `distance` in the trajectory point table, of the campaign
+
+- Total distance_on_river of the campaign: length of the campaign_river  geometries
 
 - Average speed, average of `speed` in the trajectory point table, of the campaign 
 
 - number of trash detected during the campaign `trash_count`, from `trash` table
 
-  
-  
-  For trash table: 
+- trash per km : trash count / total distance
 
-each trash is associated to its locality: `department`, `municipality`,  `state`,`country` 
+- trash_per_km on river : trash_count / distance on river (TODO : count trash on river only)
 
-This step is managed by tasks `compute_metrics_bi_temp_trajectory_point`,`compute_metrics_bi_temp_campaign`, `compute_metrics_bi_temp_trash`
-
-NB: This step could be remove as locality informations are not used anymore.
-
-### Step4 - Compute campaign/trajectory point - river association
-
-Then, we associate each trajectory point of the `bi_temp` schema with a geom, to the `river`  referential.
-
-Using `ST_CLOSESTPOINT `function (postgis). 
-
-We have decided to not associate trajectory point to a river, if the distance to its closest point is over 100m.
+This step is managed by task `compute_metrics_bi_temp_campaign`
 
 
-
-This step is managed by tasks : `compute_bi_temp_trajectory_point_river.sql`
-
-Then for each campaign, campaign geometry (`the_geom`) on referential river is computed and its distance.
-
-This step is managed by task :`compute_bi_temp_campaign_river.sql`  
-
-### Step5 - Data copy from BI to BI_TEMP
+### Step6 - Data copy from BI to BI_TEMP
 
 Before re-computing metrics on rivers with newly ingested campaign, we need to gather the all data history. 
 
@@ -128,7 +133,7 @@ For the following tables, data are migrated from bi schema to bi_temp: `campaign
 
 This step is managed by task: `copy_bi_tables_to_bi_temp.sql`
 
-### Step5 - Compute metrics on rivers
+### Step7 - Compute metrics on rivers
 
 The following metrics are computed for each river: 
 
@@ -139,7 +144,7 @@ The following metrics are computed for each river:
 
 This step is managed by task: `compute_metrics_bi_river.sql`
 
-### Step6 -  BI Data updating, Cleaning and Logging
+### Step8 -  BI Data updating, Cleaning and Logging
 
 Once all metrics have been computed, data can be safely updated in the `BI` schema. 
 
@@ -154,4 +159,4 @@ This step is managed by tasks: `update_by_tables.sql`, `log_status_pipeline.sql`
 
 ## BI-postprocessing DAG
 
-TO DO 
+Generate Feature collection

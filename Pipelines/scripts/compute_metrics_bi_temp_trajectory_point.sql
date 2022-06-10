@@ -33,13 +33,5 @@ WHERE speed IS NULL
         SELECT campaign_id FROM bi_temp.pipeline_to_compute
     );
 
-UPDATE bi_temp.trajectory_point
-SET
-    lat = st_y(st_transform(the_geom, 4326)),
-    lon = st_x(st_transform(the_geom, 4326))
-
-WHERE
-    id_ref_campaign_fk IN (SELECT campaign_id FROM bi_temp.pipeline_to_compute);
-
 DROP INDEX IF EXISTS bi_temp.bi_temp_trajectory_point;
 CREATE INDEX bi_temp_trajectory_point ON bi_temp.trajectory_point USING GIST(the_geom);

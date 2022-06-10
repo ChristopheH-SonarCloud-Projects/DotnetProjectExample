@@ -1,9 +1,9 @@
 CREATE TEMP TABLE trash_admin AS
 SELECT
     bi_temp.trash.id,
-    
+
     referential.municipality.code AS municipality_code,
-    
+
     referential.municipality.name AS municipality_name,
     referential.department.code AS department_code,
     referential.department.name AS department_name,
@@ -19,14 +19,14 @@ LEFT JOIN
     referential.municipality.the_geom, bi_temp.trash.the_geom)
 LEFT JOIN
     referential.department ON
-        referential.department.id = 
+        referential.department.id =
     referential.municipality.id_ref_department_fk
 LEFT JOIN
     referential.state ON
         referential.state.id = referential.department.id_ref_state_fk
 LEFT JOIN
-    referential.country ON
-        referential.country.id = referential.state.id_ref_country_fk
+    referential.country ON st_contains(
+    referential.country.the_geom, bi_temp.trash.the_geom)
 
 WHERE bi_temp.trash.id_ref_campaign_fk IN (SELECT campaign_id FROM bi_temp.pipeline_to_compute);;
 

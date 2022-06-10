@@ -23,8 +23,8 @@ SELECT
     precision,
     id_ref_model_fk,
     time,
-    st_y(st_transform(the_geom, 4326)),
-    st_x(st_transform(the_geom, 4326)),
+    st_y(st_transform(ST_SetSRID(the_geom, 2154), 4326)),
+    st_x(st_transform(ST_SetSRID(the_geom, 2154), 4326)),
     createdon,
     NULL
 

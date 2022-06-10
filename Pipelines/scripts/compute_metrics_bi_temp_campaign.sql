@@ -41,10 +41,6 @@ WHERE
     );
 
 UPDATE bi_temp.campaign c
-SET distance_start_end = st_distance(start_point, end_point)
-WHERE c.id IN (SELECT campaign_id FROM bi_temp.pipeline_to_compute);
-
-UPDATE bi_temp.campaign c
 SET total_distance = agg.total_distance,
     avg_speed = agg.avg_speed
 FROM (
@@ -78,6 +74,20 @@ WHERE
     trash_n.id_ref_campaign_fk = c.id AND c.id IN (
         SELECT campaign_id FROM bi_temp.pipeline_to_compute
     );
+
+UPDATE bi_temp.campaign c
+SET distance_on_river = cr.distance
+FROM (
+    SELECT id_ref_campaign_fk,
+        st_length(st_makeline(the_geom)) distance
+    FROM bi_temp.campaign_river cr
+    GROUP BY cr.id_ref_campaign_fk
+) AS cr
+WHERE c.id = cr.id_ref_campaign_fk;
+
+UPDATE bi_temp.campaign c
+SET trash_per_km_on_river = c.trash_count / (nullif(c.distance_on_river, 0) / 1000),
+    trash_per_km = c.trash_count / (nullif(c.total_distance, 0) / 1000);
 
 DROP INDEX IF EXISTS bi_temp.campaign_start_point;
 CREATE INDEX campaign_start_point ON bi_temp.campaign USING gist(start_point);
