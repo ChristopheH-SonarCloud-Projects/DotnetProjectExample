@@ -11,8 +11,7 @@ INSERT INTO bi_temp.trajectory_point (
     speed,
     lat,
     lon,
-    createdon,
-    pipeline_id
+    createdon
 
 )
 SELECT
@@ -26,8 +25,7 @@ SELECT
     speed,
     st_y(st_transform(ST_SetSRID(the_geom, 2154), 4326)),
     st_x(st_transform(ST_SetSRID(the_geom, 2154), 4326)),
-    createdon,
-    NULL::uuid
+    createdon
 
 FROM campaign.trajectory_point
 WHERE
@@ -44,8 +42,7 @@ INSERT INTO bi_temp.trajectory_point (
     speed,
     lat,
     lon,
-    createdon,
-    pipeline_id
+    createdon
 
 )
 SELECT
@@ -59,8 +56,7 @@ SELECT
     speed,
     lat,
     lon,
-    createdon,
-    NULL::uuid
+    createdon
 
 FROM campaign.trajectory_point
 WHERE

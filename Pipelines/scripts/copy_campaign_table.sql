@@ -1,4 +1,4 @@
-DELETE FROM bi_temp.campaign;
+TRUNCATE bi_temp.campaign;
 INSERT INTO bi_temp.campaign (
     id,
     locomotion,
@@ -6,8 +6,7 @@ INSERT INTO bi_temp.campaign (
     remark,
     id_ref_user_fk,
     riverside,
-    createdon,
-    pipeline_id
+    createdon
 )
 SELECT
     id,
@@ -16,7 +15,6 @@ SELECT
     remark,
     id_ref_user_fk,
     riverside,
-    createdon,
-    NULL
+    createdon
 FROM campaign.campaign
 WHERE id IN (SELECT campaign_id FROM bi_temp.pipeline_to_compute);
