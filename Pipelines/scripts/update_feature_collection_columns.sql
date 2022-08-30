@@ -25,7 +25,7 @@ FROM (
             LEFT JOIN bi.river bir on bir.id = rr.id
             LEFT JOIN (
                 SELECT id_ref_segment_fk,
-                    ARRAY_AGG(JSON_BUILD_OBJECT(name, nb_trash)) trashes_by_type
+                    ARRAY_AGG(JSON_BUILD_OBJECT(COALESCE(name, 'no_type') , nb_trash)) trashes_by_type
                 FROM(
                     SELECT tr.id_ref_segment_fk, tt.name, count(tr.id) nb_trash
                     FROM bi.trash_river tr
@@ -37,7 +37,7 @@ FROM (
             ) trash ON trash.id_ref_segment_fk = bis.id
             LEFT JOIN (
                 SELECT id_ref_river_fk,
-                    ARRAY_AGG(JSON_BUILD_OBJECT(name, nb_trash)) trashes_by_type
+                    ARRAY_AGG(JSON_BUILD_OBJECT(COALESCE(name, 'no_type') , nb_trash)) trashes_by_type
                 FROM(
                     SELECT tr.id_ref_river_fk, tt.name, count(tr.id) nb_trash
                     FROM bi.trash_river tr
@@ -68,7 +68,7 @@ FROM (
             INNER JOIN referential.river rr on rr.id=bir.id
             LEFT JOIN (
                 SELECT id_ref_river_fk,
-                    ARRAY_AGG(JSON_BUILD_OBJECT(name, nb_trash)) trashes_by_type
+                    ARRAY_AGG(JSON_BUILD_OBJECT(COALESCE(name, 'no_type'), nb_trash)) trashes_by_type
                 FROM(
                     SELECT tr.id_ref_river_fk, tt.name, count(tr.id) nb_trash
                     FROM bi.trash_river tr
@@ -130,7 +130,7 @@ FROM (
             LEFT JOIN referential.river r ON r.id=cr.id_ref_river_fk
             LEFT JOIN (
                 SELECT id_ref_campaign_fk,
-                    ARRAY_AGG(JSON_BUILD_OBJECT(name, nb_trash)) trashes_by_type
+                    ARRAY_AGG(JSON_BUILD_OBJECT(COALESCE(name, 'no_type'), nb_trash)) trashes_by_type
                 FROM(
                     SELECT tr.id_ref_campaign_fk, tt.name, count(tr.id) nb_trash
                     FROM bi.trash_river tr
