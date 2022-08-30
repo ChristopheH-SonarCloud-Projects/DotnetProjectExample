@@ -15,7 +15,7 @@ with DAG(
     dag_id= f'bi-reset-campaign-{env}',
     start_date=days_ago(1),
     schedule_interval=None,
-    template_searchpath=f"/opt/airflow/dags/scripts/",
+    template_searchpath=f"/opt/airflow/dags/{env}/scripts/",
     catchup=False,
     tags=[f"env:{env}", f"branch-name:{branch_name}"]
 
