@@ -75,6 +75,12 @@ with DAG(
         dag=dag
     )
 
+    add_metrics_bi_temp_campaign_river = PostgresOperator(
+        task_id='add_metrics_bi_temp_campaign_river',
+        postgres_conn_id=f"SurfRiderDb_{env}_manager_user",
+        sql='add_metrics_bi_temp_campaign_river.sql',
+        dag=dag
+    )
 
     compute_metrics_bi_temp_trash = PostgresOperator(
         task_id='compute_metrics_bi_temp_trash',
@@ -101,6 +107,13 @@ with DAG(
         task_id='compute_metrics_bi_river',
         postgres_conn_id=f"SurfRiderDb_{env}_manager_user",
         sql='compute_metrics_bi_river.sql',
+        dag=dag
+    )
+
+    compute_metrics_bi_segment = PostgresOperator(
+        task_id='compute_metrics_bi_segment',
+        postgres_conn_id=f"SurfRiderDb_{env}_manager_user",
+        sql='compute_metrics_bi_segment.sql',
         dag=dag
     )
 
@@ -137,21 +150,29 @@ copy_trajectory_point_table >> compute_metrics_bi_temp_trajectory_point
 compute_metrics_bi_temp_trajectory_point >> compute_bi_temp_trajectory_point_river
 compute_bi_temp_trajectory_point_river >> compute_bi_temp_campaign_river
 
-copy_trash_table >> compute_metrics_bi_temp_trash >> compute_bi_temp_trash_river
+copy_trash_table >> compute_metrics_bi_temp_trash
+[
+    compute_bi_temp_campaign_river,
+    compute_metrics_bi_temp_trash
+] >> compute_bi_temp_trash_river
 
 [
     copy_campaign_table,
-    compute_bi_temp_campaign_river,
-    compute_bi_temp_trash_river
+    compute_metrics_bi_temp_trash,
+    compute_metrics_bi_temp_trajectory_point
 ] >> compute_metrics_bi_temp_campaign
+
+
 
 [
     compute_metrics_bi_temp_campaign,
-    compute_bi_temp_trajectory_point_river,
-] >> copy_bi_tables_to_bi_temp
+    compute_bi_temp_trash_river,
+] >> add_metrics_bi_temp_campaign_river
 
-copy_bi_tables_to_bi_temp >> compute_metrics_bi_river
-compute_metrics_bi_river >> update_bi_tables
+add_metrics_bi_temp_campaign_river >> copy_bi_tables_to_bi_temp
+
+copy_bi_tables_to_bi_temp >> compute_metrics_bi_river >> compute_metrics_bi_segment
+compute_metrics_bi_segment >> update_bi_tables
 update_bi_tables >> clean_bi_temp_tables
 clean_bi_temp_tables >> logs_status_pipeline
 logs_status_pipeline >> run_bi_postprocessing
