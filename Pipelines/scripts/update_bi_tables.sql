@@ -260,9 +260,13 @@ INSERT INTO bi.segment (
     importance,
     count_trash,
     distance_monitored,
-    the_geom_monitored,
     trash_per_km,
     nb_campaign,
+    count_trash_river,
+    distance_monitored_river,
+    trash_per_km_river,
+    nb_campaign_river,
+    the_geom_monitored,
     the_geom,
     createdon
 )
@@ -271,9 +275,13 @@ SELECT
     importance,
     count_trash,
     distance_monitored,
-    the_geom_monitored,
     trash_per_km,
     nb_campaign,
+    count_trash_river,
+    distance_monitored_river,
+    trash_per_km_river,
+    nb_campaign_river,
+    the_geom_monitored,
     the_geom,
     createdon
 FROM bi_temp.segment;

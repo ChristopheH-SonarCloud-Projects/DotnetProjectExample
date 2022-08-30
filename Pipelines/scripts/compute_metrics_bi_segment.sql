@@ -62,3 +62,16 @@ FROM
 
     ) AS t
 WHERE t.id_ref_segment_fk = segment.id;
+
+-- Add river data
+UPDATE bi_temp.segment s
+SET count_trash_river = r.count_trash,
+    trash_per_km_river = r.trash_per_km,
+    distance_monitored_river = r.distance_monitored,
+    nb_campaign_river = r.nb_campaign
+FROM (
+    SELECT rs.id as segment_id, r.count_trash, r.trash_per_km, r.distance_monitored, r.nb_campaign
+    FROM referential.segment rs
+    INNER JOIN bi_temp.river r on r.id = rs.id_ref_river_fk
+) r
+WHERE s.id=r.segment_id;
