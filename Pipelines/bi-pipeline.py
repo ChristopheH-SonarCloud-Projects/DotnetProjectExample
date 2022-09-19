@@ -103,17 +103,17 @@ with DAG(
         dag=dag
     )
 
-    compute_metrics_bi_river = PostgresOperator(
-        task_id='compute_metrics_bi_river',
+    compute_metrics_bi_temp_river = PostgresOperator(
+        task_id='compute_metrics_bi_temp_river',
         postgres_conn_id=f"SurfRiderDb_{env}_manager_user",
-        sql='compute_metrics_bi_river.sql',
+        sql='compute_metrics_bi_temp_river.sql',
         dag=dag
     )
 
-    compute_metrics_bi_segment = PostgresOperator(
-        task_id='compute_metrics_bi_segment',
+    compute_metrics_bi_temp_segment = PostgresOperator(
+        task_id='compute_metrics_bi_temp_segment',
         postgres_conn_id=f"SurfRiderDb_{env}_manager_user",
-        sql='compute_metrics_bi_segment.sql',
+        sql='compute_metrics_bi_temp_segment.sql',
         dag=dag
     )
 
@@ -171,8 +171,8 @@ copy_trash_table >> compute_metrics_bi_temp_trash
 
 add_metrics_bi_temp_campaign_river >> copy_bi_tables_to_bi_temp
 
-copy_bi_tables_to_bi_temp >> compute_metrics_bi_river >> compute_metrics_bi_segment
-compute_metrics_bi_segment >> update_bi_tables
+copy_bi_tables_to_bi_temp >> compute_metrics_bi_temp_river >> compute_metrics_bi_temp_segment
+compute_metrics_bi_temp_segment >> update_bi_tables
 update_bi_tables >> clean_bi_temp_tables
 clean_bi_temp_tables >> logs_status_pipeline
 logs_status_pipeline >> run_bi_postprocessing
