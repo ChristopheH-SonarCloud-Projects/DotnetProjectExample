@@ -1,9 +1,11 @@
 import datetime
-from airflow import DAG
-from airflow.providers.postgres.operators.postgres import PostgresOperator
-from airflow.operators.trigger_dagrun import TriggerDagRunOperator
-from dotenv import load_dotenv
 import os
+from airflow import DAG
+from airflow.operators.trigger_dagrun import TriggerDagRunOperator
+from airflow.providers.postgres.operators.postgres import PostgresOperator
+from airflow.utils.dates import days_ago
+from dotenv import load_dotenv
+
 load_dotenv()
 env = os.environ["ENV"]
 branch_name = os.environ["BRANCH"]
@@ -11,8 +13,9 @@ branch_name = os.environ["BRANCH"]
 with DAG(
 
     dag_id=f"bi-pipeline-{env}",
-    start_date=datetime.datetime(2021, 1, 1),
+    start_date=days_ago(1),
     template_searchpath=f"/opt/airflow/dags/{env}/scripts/",
+    schedule_interval=None,
     catchup=False,
     tags=[f"env:{env}", f"branch-name:{branch_name}"]
 

@@ -1,8 +1,10 @@
 import datetime
+import os
 from airflow import DAG
 from airflow.providers.postgres.operators.postgres import PostgresOperator
+from airflow.utils.dates import days_ago
 from dotenv import load_dotenv
-import os
+
 load_dotenv()
 env = os.environ["ENV"]
 branch_name = os.environ["BRANCH"]
@@ -10,7 +12,8 @@ branch_name = os.environ["BRANCH"]
 with DAG(
 
     dag_id= f'bi-postprocessing-{env}',
-    start_date=datetime.datetime(2021, 1, 1),
+    start_date=days_ago(1),
+    schedule_interval=None,
     template_searchpath=f"/opt/airflow/dags/{env}/scripts/",
     catchup=False,
     tags=[f"env:{env}", f"branch-name:{branch_name}"]
